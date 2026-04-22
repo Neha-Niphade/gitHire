@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Header -->
+    <div class="glass-card rounded-2xl p-8 mb-8 flex flex-col md:flex-row items-center justify-between gap-6 relative overflow-hidden">
+        <div class="absolute top-0 right-0 w-64 h-64 bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+        <div class="absolute bottom-0 left-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10"></div>
+        
+        <div class="flex items-center gap-6 z-10 relative w-full md:w-auto">
+            <img src="{{ github_user.avatar_url }}" alt="{{ github_user.login }}" class="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white shadow-lg">
+            <div class="flex-1">
+                <h1 class="text-3xl font-bold">{{ github_user.name|default:github_user.login }}</h1>
+                <p class="text-indigo-600 font-medium text-lg mb-2">@{{ github_user.login }}</p>
+                {% if github_user.bio %}
+                <p class="text-slate-700 max-w-xl">{{ github_user.bio }}</p>
+                {% endif %}
+            </div>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3 z-10 relative">
+            <a href="{{ github_user.html_url }}" target="_blank" class="px-6 py-2.5 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition shadow-md flex items-center gap-2 justify-center">
+                <i class="fab fa-github"></i> View on GitHub
+            </a>
+            <button onclick="copyLink()" class="px-6 py-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-50 transition shadow-sm flex items-center gap-2 justify-center">
+                <i class="fas fa-link"></i> Copy Link
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column: Score and AI -->
+        <div class="lg:col-span-1 space-y-8">
+            <!-- Score Card -->
+            <div class="bg-white rounded-2xl p-8 border border-slate-100 shadow-sm text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-br from-indigo-50 to-purple-50 opacity-40"></div>
+                <div class="relative z-10">
+                    <h2 class="text-sm font-bold text-slate-400 uppercase tracking-widest mb-6">Developer Score</h2>
+                    <div class="relative inline-flex items-center justify-center">
+                        <svg class="w-48 h-48 transform -rotate-90">
+                            <circle cx="96" cy="96" r="88" stroke="currentColor" stroke-width="12" fill="transparent" class="text-indigo-100" />
+                            <circle id="score-circle" cx="96" cy="96" r="88" stroke="currentColor" stroke-width="12" fill="transparent" stroke-dasharray="552.9" stroke-dashoffset="552.9" class="text-indigo-600 transition-all duration-1000 ease-out" />
+                        </svg>
+                        <div class="absolute flex flex-col items-center justify-center">
+                            <span class="text-5xl font-black gradient-text">{{ score }}</span>
+                        </div>
+                    </div>
+                    <p class="mt-4 font-medium text-slate-500">Based on GitHub Impact</p>
+                </div>
+            </div>
+
+            <!-- AI Summary -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <div class="flex items-center gap-3 mb-5 pb-4 border-b border-slate-100">
+                    <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <h2 class="text-lg font-bold">AI Analysis</h2>
+                </div>
+                <p class="text-slate-600 leading-relaxed mb-6">{{ ai.summary }}</p>
+                
+                <h3 class="font-semibold text-slate-800 mb-3 text-sm tracking-wide uppercase">Best Fit Roles</h3>
+                <div class="flex flex-wrap gap-2 mb-6">
+                    {% for role in ai.best_roles %}
+                    <span class="bg-indigo-50 text-indigo-700 px-3 py-1.5 rounded-lg text-sm font-semibold border border-indigo-100">{{ role }}</span>
+                    {% endfor %}
+                </div>
+
+                <div class="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl">
+                    <h3 class="font-bold text-indigo-900 mb-1 text-sm uppercase">Recommendation</h3>
+                    <p class="text-indigo-800 text-sm font-medium mb-0 leading-relaxed">{{ ai.hiring_recommendation }}</p>
+                </div>
+            </div>
+            
+            <!-- Strengths / Weaknesses -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100">
+                <div class="mb-6">
+                    <h3 class="font-bold text-emerald-700 flex items-center gap-2 mb-4"><i class="fas fa-arrow-trend-up"></i> Key Strengths</h3>
+                    <ul class="space-y-3">
+                        {% for item in ai.strengths %}
+                        <li class="flex items-start gap-3 text-slate-600 text-sm font-medium"><i class="fas fa-check-circle text-emerald-500 mt-0.5"></i> <span>{{ item }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="pt-6 border-t border-slate-100">
+                    <h3 class="font-bold text-orange-600 flex items-center gap-2 mb-4"><i class="fas fa-arrow-trend-down"></i> Areas to Improve</h3>
+                    <ul class="space-y-3">
+                        {% for item in ai.weaknesses %}
+                        <li class="flex items-start gap-3 text-slate-600 text-sm font-medium"><i class="fas fa-exclamation-circle text-orange-400 mt-0.5"></i> <span>{{ item }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Stats and Charts -->
+        <div class="lg:col-span-2 space-y-8">
+            <!-- Stats -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mb-3 text-xl"><i class="fas fa-users"></i></div>
+                    <div class="text-2xl font-bold text-slate-800">{{ github_user.followers }}</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Followers</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-green-50 text-green-500 flex items-center justify-center mb-3 text-xl"><i class="fas fa-user-plus"></i></div>
+                    <div class="text-2xl font-bold text-slate-800">{{ github_user.following }}</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Following</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-purple-50 text-purple-500 flex items-center justify-center mb-3 text-xl"><i class="fas fa-book-open"></i></div>
+                    <div class="text-2xl font-bold text-slate-800">{{ github_user.public_repos }}</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Repositories</div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col items-center">
+                    <div class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center mb-3 text-xl"><i class="fas fa-star"></i></div>
+                    <div class="text-2xl font-bold text-slate-800">{{ total_stars }}</div>
+                    <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mt-1">Total Stars</div>
+                </div>
+            </div>
+
+            <!-- Charts & Repos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                    <h3 class="font-bold text-lg mb-6 text-slate-800">Top Languages</h3>
+                    <div class="aspect-square relative w-full flex justify-center">
+                        <canvas id="languagesChart" class="max-h-64"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 flex flex-col">
+                    <h3 class="font-bold text-lg mb-4 text-slate-800">Recent Repositories</h3>
+                    <div class="space-y-4 flex-1 overflow-y-auto pr-2" style="max-height: 480px;">
+                        {% for repo in repos %}
+                        <div class="border border-slate-100 p-4 rounded-xl hover:border-indigo-200 hover:shadow-md transition bg-slate-50/50 group">
+                            <div class="flex justify-between items-start mb-2 gap-2">
+                                <a href="{{ repo.html_url }}" target="_blank" class="font-bold text-indigo-700 group-hover:text-indigo-500 transition truncate flex items-center gap-2">
+                                    <i class="far fa-folder text-slate-400"></i> {{ repo.name }}
+                                </a>
+                                <span class="text-xs font-bold px-2 py-1 bg-white border border-slate-200 rounded-md text-slate-600 flex items-center gap-1 shrink-0">
+                                    <i class="fas fa-star text-yellow-400"></i> {{ repo.stargazers_count }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-slate-500 line-clamp-2">{{ repo.description|default:"No description provided." }}</p>
+                            {% if repo.language %}
+                            <div class="mt-3 text-xs font-bold text-slate-400 flex items-center gap-1.5 uppercase">
+                                <div class="w-2 h-2 rounded-full bg-indigo-400"></div> {{ repo.language }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                        {% if not repos %}
+                        <p class="text-slate-500 text-center py-8">No repositories found.</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+    </div>
+</div>
+
+{{ languages|json_script:"languages-data" }}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href);
+        const btn = event.currentTarget;
+        const originalContent = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check text-green-500"></i> Copied!';
+        setTimeout(() => {
+            btn.innerHTML = originalContent;
+        }, 2000);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate score circle
+        setTimeout(() => {
+            const score = parseInt("{{ score }}") || 0;
+            const circle = document.getElementById('score-circle');
+            const circumference = 552.9;
+            const offset = circumference - (score / 100) * circumference;
+            circle.style.strokeDashoffset = offset;
+        }, 100);
+
+        // Chart.js
+        const langDataElement = document.getElementById('languages-data');
+        if(langDataElement) {
+            const langData = JSON.parse(langDataElement.textContent);
+            const labels = Object.keys(langData);
+            const data = Object.values(langData);
+
+            if(labels.length > 0) {
+                const ctx = document.getElementById('languagesChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: [
+                                '#4f46e5', '#8b5cf6', '#ec4899', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444'
+                            ],
+                            borderWidth: 0,
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                                labels: {
+                                    usePointStyle: true,
+                                    padding: 20,
+                                    font: { family: "'Inter', sans-serif", weight: '500' }
+                                }
+                            }
+                        },
+                        cutout: '75%'
+                    }
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}
