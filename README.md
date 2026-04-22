@@ -1,12 +1,12 @@
 # GitHire AI
 
-An AI-powered GitHub profile analyzer built with Django, Tailwind CSS, and OpenAI.
+An AI-powered GitHub profile analyzer built with Django, Tailwind CSS, and gemini.
 
 ## Features
 - Search any GitHub username
 - Fetch profile and repository statistics via GitHub API
 - Calculate a practical 0-100 Developer Score
-- Advanced AI insights, strengths, weaknesses, and best-fit roles via OpenAI
+- Advanced AI insights, strengths, weaknesses, and best-fit roles via gemini
 - Beautiful Shareable Dashboard with interactive charts
 
 ## Tech Stack
