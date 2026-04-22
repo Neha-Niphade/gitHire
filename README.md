@@ -62,7 +62,7 @@ DB_PORT=3306
 
 # API Keys
 GITHUB_TOKEN=your_github_token
-OPENAI_API_KEY=your_openai_api_key
+GEMINI_API_KEY=your_gemini_api_key
 ```
 
 *Note: If `DB_NAME` is omitted, the app will automatically fall back to local SQLite.*
