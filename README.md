@@ -14,7 +14,7 @@ An AI-powered GitHub profile analyzer built with Django, Tailwind CSS, and OpenA
 - MySQL (Fallback to SQLite)
 - Tailwind CSS
 - Chart.js
-- OpenAI API
+- Gemini API
 - GitHub REST API
 
 ## Getting Started
